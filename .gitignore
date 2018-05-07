@@ -1,4 +1,6 @@
 Neto.egg*
+dist*
 *.pyc
 *.~
 *__pycache__*
+MANIFEST

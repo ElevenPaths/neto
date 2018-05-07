@@ -61,8 +61,8 @@ be used directly from other Python packages or by means of its WebUI.
   Exit status:
     The CLI will exit with one of the following values:
 
-    0     Successful execution.
-    1    Failed executions.
+    0   Successful execution.
+    1   Failed executions.
 ''')
 
     # ==============
