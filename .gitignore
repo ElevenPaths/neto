@@ -1,0 +1,4 @@
+Neto.egg*
+*.pyc
+*.~
+*__pycache__*
