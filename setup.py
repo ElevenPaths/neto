@@ -47,6 +47,7 @@ setup(
         "pyasn1",
         "timeout_decorator",
         "requests",
-        "json-rpc"
+        "json-rpc",
+        "werkzeug"
     ]
 )
