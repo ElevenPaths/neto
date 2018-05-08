@@ -3,6 +3,11 @@ Project Neto's Changelog
 
 Full details of the changes committed with each version.
 
+0.5.1, 2018/05/08 -- Add werkzeug dependency
+
+Hotfix to add a dependency for many Python3 users by adding
+werkzeug library.
+
 0.5.0, 2018/05/07 -- First public release
 
 Some work has been done to make the usage easier for third 
