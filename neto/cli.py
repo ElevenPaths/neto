@@ -147,20 +147,20 @@ be used directly from other Python packages or by means of its WebUI.
         '--contains_name',
         action='store',
         default=None,
-        help='set a string that SHOULD appear in the name of the file.'
+        help='sets a string that SHOULD appear in the name of the file.'
     )
     analyserGroupOther.add_argument(
-        '--show',
+        '--quiet',
         action='store_true',
         default=False,
-        help='print the results in the terminal.'
+        help='avoids printing the results in the terminal.'
     )
     analyserGroupOther.add_argument(
         '--start',
         action='store',
         default=0,
         type=int,
-        help='set the start index for the analysis.'
+        help='sets the start index for the analysis.'
     )
     analyserParser.set_defaults(func=neto.analyser.main)
 

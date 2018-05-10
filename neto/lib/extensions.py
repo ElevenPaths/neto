@@ -23,6 +23,7 @@ import datetime as dt
 import json
 import os
 import tempfile
+import textwrap
 
 from binascii import unhexlify
 
@@ -561,3 +562,36 @@ class Extension:
             results.update(classObj.__dict__)
 
         self.features.update(results)
+
+
+    def __str__(self):
+        return textwrap.dedent("""
+Name:       {name}
+
+Version:    {version}
+
+SHA256:     {sha256}
+
+Author:     {author}
+
+Permissions:
+{permissions}
+
+Content scripts:
+{content_scripts}
+
+Background:
+{background}
+
+Entities:
+{entities}""".format(
+                name=self.manifest["name"],
+                version=self.manifest["version"],
+                sha256=self.digest["sha256"],
+                author=self.manifest["author"],
+                permissions= "\n".join('\t- {}'.format(p) for p in self.manifest["permissions"]),
+                content_scripts=json.dumps(self.manifest["content_scripts"], indent=2),
+                background=json.dumps(self.manifest["background"], indent=2),
+                entities=json.dumps(self.features["entities"], indent=2),
+            )
+        )

@@ -2,7 +2,7 @@
 #
 ################################################################################
 #
-#   Copyright 2017 ElevenPaths
+#   Copyright 2017-2018 ElevenPaths
 #
 #   Neto is free software: you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -36,7 +36,7 @@ from neto.lib.extensions import Extension
 from neto.downloaders.http import HTTPResource
 
 
-def analyseExtensionFromFile(filePath, show=False, outputPath="./", tmpPath=tempfile.gettempdir()):
+def analyseExtensionFromFile(filePath, quiet=False, outputPath="./", tmpPath=tempfile.gettempdir()):
     """
     Main function for Neto Analyser.
 
@@ -45,7 +45,7 @@ def analyseExtensionFromFile(filePath, show=False, outputPath="./", tmpPath=temp
     Params:
     -------
         filePath: The local path to an extension.
-        show: A boolean that defines whether to print the generated output.
+        quiet: A boolean that defines whether to print an output.
         outputPath: The folder where the extension will be stored.
         tmpPath: The folder where unzipped files will be created.
 
@@ -57,8 +57,8 @@ def analyseExtensionFromFile(filePath, show=False, outputPath="./", tmpPath=temp
     if os.path.isfile(filePath):
         ext = Extension(filePath, tFolder=tmpPath)
 
-        if show:
-            print("[*]\tData collected:\n" + json.dumps(ext.__dict__, indent=2))
+        if not quiet:
+            print("[*]\tData collected:\n" + str(ext))
 
         # Store the features extracted
         outputFile = os.path.join(outputPath, ext.digest["md5"] + ".json")
@@ -68,7 +68,7 @@ def analyseExtensionFromFile(filePath, show=False, outputPath="./", tmpPath=temp
         return ext
 
 
-def analyseExtensionFromURI(uri, show=False, outputPath="./", tmpPath=tempfile.gettempdir()):
+def analyseExtensionFromURI(uri, quiet=False, outputPath="./", tmpPath=tempfile.gettempdir()):
     """
     Main function for Neto Analyser.
 
@@ -77,7 +77,7 @@ def analyseExtensionFromURI(uri, show=False, outputPath="./", tmpPath=tempfile.g
     Params:
     -------
         uri: The parameter options received from the command line.
-        show: A boolean that defines whether to print the generated output.
+        quiet: A boolean that defines whether to print an output.
         outputPath: The folder where the extension will be stored.
         tmpPath: The folder where unzipped files will be created.
 
@@ -110,7 +110,7 @@ def analyseExtensionFromURI(uri, show=False, outputPath="./", tmpPath=tempfile.g
         filePath,
         tmpPath=tmpPath,
         outputPath=outputPath,
-        show=show
+        quiet=quiet
     )
 
 
@@ -156,7 +156,7 @@ def main(parsed_args):
                             filePath,
                             tmpPath=tmpPath,
                             outputPath=outputPath,
-                            show=parsed_args.show,
+                            quiet=parsed_args.quiet,
                         )
                     except Exception as e:
                         print("[X]\tSomething happened when processing {s}...".format(s=filePath))
@@ -170,7 +170,7 @@ def main(parsed_args):
                 uri,
                 tmpPath=tmpPath,
                 outputPath=outputPath,
-                show=parsed_args.show
+                quiet=parsed_args.quiet
             )
 
     elif parsed_args.extensions:
@@ -180,7 +180,7 @@ def main(parsed_args):
                 filePath,
                 tmpPath=tmpPath,
                 outputPath=outputPath,
-                show=parsed_args.show
+                quiet=parsed_args.quiet
             )
 
     if parsed_args.clean:
