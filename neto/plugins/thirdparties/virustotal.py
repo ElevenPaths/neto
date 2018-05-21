@@ -22,10 +22,13 @@
 import datetime as dt
 import json
 import os
+import requests
 
-from neto.lib.thirdparties import Thirdparty
+import neto.lib.utils as utils
+from neto.lib.thirdparties import ThirdpartyCollector
 
-class Virustotal(Thirdparty):
+
+class Virustotal(ThirdpartyCollector):
     """
     A Virustotal module that wraps external analytical modules.
 
@@ -33,43 +36,64 @@ class Virustotal(Thirdparty):
     logic, by setting initial values for the instance and loading the
     corresponding features.
 
-    The methods to be overrrided are defined as follows:
-        - buildURI(self, fileID): To construct the uri property based on a
-            fileId. To do so automatically without rebuilding this method, the
-            string should contain the placemark <FILE_ID>.
-        - getFeatures(self, uri=None): To construct the dict that will be
-            loaded, most of the times grabbing the information from a remote
+    The method to be overriden are defined as follows:
+        - getInfo(self, uri=None): To construct the dict that will be loaded,
+            most of the times grabbing the information from a remote
             API and process it.
 
-    The serialization of this type of objects will bring a results such as this:
-
+    The serialization of this type of objects will bring a result such as this:
     {
-      "_platform": "Virustotal",
-      "_date_analysis": "…",
-      "_features": {
-        …
-      },
-      "_uri": "https://…",
-      "_item": "0123456789abcdef"
+        "platform": "Virustotal",
+        "date_analysis": "…",
+        "features": {
+            …
+        },
     }
     """
     BASE_URL = "https://www.virustotal.com/#/file/<FILE_ID>/details"
+    API_KEY = utils.getConfigurationFor("analyser")["virustotal_api_key"]
 
-    def buildUri(self, extension):
+    def getInfo(self, extension=None):
         """
-        Abstract method that builds the remote URI for the object
+        Method that will perform the collection of the new features
+
+        It will be in charge of collecting the new resourcs and shipping the
+        data to a JSON structure. It will need at least:
+        {
+            "platform": "my_platform",
+            "date_analysis": "…",
+            "features": {
+                …
+            },
+        }
 
         Args:
         -----
             extension: Remote identifier to be used in the URI.
         """
-        return self.BASE_URL.replace("<FILE_ID>", extension.digest["sha256"])
+        platformName = self.__class__.__name__.lower()
+        results = {platformName: {}}
+        results[platformName]["date_analysis"] = str(dt.datetime.utcnow())
 
-    def getFeatures(self):
-        """
-        Method that will perform the collection of the new features
+        if self.API_KEY:
+            params = {
+                'apikey': self.API_KEY,
+                'resource': extension.digest["sha256"]
+            }
+            headers = {
+              "Accept-Encoding": "gzip, deflate",
+              "User-Agent" : "gzip,  Neto | A Browser Extension Analysis Toolkit"
+              }
+            response = requests.post(
+                'https://www.virustotal.com/vtapi/v2/file/report',
+                #'https://www.virustotal.com/vtapi/v2/file/rescan',
+                params=params
+            )
+            #results[platformName]["features"] = {}
+            if response.json()["response_code"] != 0:
+                results[platformName]["features"] = response.json()
+                results[platformName]["assesment"] = "{}/{}".format(response.json()["positives"], response.json()["total"])
+            else:
+                print("[*] Something happened with the Virustotal API: ''.".format(response.json()["verbose_msg"]))
 
-        It will be in charge of collecting the new resourcs and shipping the
-        data to the self.features local JSON structure.
-        """
-        return {}
+        return results

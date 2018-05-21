@@ -33,3 +33,11 @@ banner = """
                                     Version: {version}
 
 """.format(version=neto.__version__)
+
+DISCLAIMER = """
+    This program comes with ABSOLUTELY NO WARRANTY. This software is free
+    software, and you are really welcome to redistribute it under certain
+    conditions. For additional information about the terms and conditions of the
+    GPLv3+ license, visit <http://www.gnu.org/licenses/gpl-3.0.txt>.
+
+"""

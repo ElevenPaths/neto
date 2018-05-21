@@ -104,12 +104,15 @@ class Extension:
                 self.files = Extension.hashFiles(workingPaths)
 
                 # Set the features for the file
-                self.features = Extension.analyse(workingPaths)
+                self.features = Extension.analyse(unzippedFiles=workingPaths, extensionFile=lPath)
 
+                # Get third parties links
                 self.getThirdparties()
         elif jText:
             try:
-                self.data = json.loads(jText)
+                aux = json.loads(jText)
+                for key, value in aux.items():
+                    setattr(self, key[1:], value)
             except json.decoder.JSONDecodeError:
                 raise ValueError("Something happened when loading the data from a JSON in Extension.__init__. " + str(e))
         else:
@@ -480,7 +483,7 @@ class Extension:
         return files
 
     @classmethod
-    def analyse(self, files):
+    def analyse(self, extensionFile=None, unzippedFiles=None):
         """
         Method that extracts entities from the files found in a folder
 
@@ -491,9 +494,11 @@ class Extension:
 
         Args:
         -----
-            files: A dictionary of valid paths towards the files to analyse.
-                The key is the relative path inside the extension while the
-                value is the real path where the information is stored.
+            extensionFile: The path to the extension file without being
+                unzipped.
+            unzippedFiles: A dictionary of valid paths towards the files to
+                analyse. The key is the relative path inside the extension while
+                the value is the real path where the information is stored.
                 {
                      "manifest.json": "/tmp/extension/manifest.json"
                      …
@@ -540,7 +545,7 @@ class Extension:
 
         analysisList = utils.getRunnableAnalysisFromModule("neto.plugins.analysis")
         for methodObj in analysisList:
-            results.update(methodObj(files))
+            results.update(methodObj(unzippedFiles=unzippedFiles, extensionFile=extensionFile))
 
         return results
 
@@ -550,48 +555,61 @@ class Extension:
         Method that gets thirdparties analysis
 
         It automatically updates the instance's features with a thirdparties
-        attribute in the Json.
+        attribute in the Json. To do so, we will use the ThirdPartyCollector
+        classes that will return always a JSON structure.
         """
         results = {}
         results["thirdparties"] = {}
 
-        thirdpartiesList = utils.getAllClassesFromModule("neto.plugins.thirdparties")
-
+        thirdpartiesList = utils.getAllClassesFromModule("neto.plugins.thirdparties", classesToAvoid=["ThirdpartyCollector"])
         for classObj in thirdpartiesList:
-            classObj.uri = classObj.buildUri(self)
-            results.update(classObj.__dict__)
+            results["thirdparties"].update(classObj.getInfo(self))
 
         self.features.update(results)
 
 
     def __str__(self):
         return textwrap.dedent("""
-Name:       {name}
+Name:               {name}
+-----
 
-Version:    {version}
+Version:            {version}
+--------
 
-SHA256:     {sha256}
+SHA256:             {sha256}
+-------
 
-Author:     {author}
+Author:             {author}
+-------
 
 Permissions:
+------------
 {permissions}
 
 Content scripts:
+----------------
 {content_scripts}
 
 Background:
+-----------
 {background}
 
 Entities:
-{entities}""".format(
-                name=self.manifest["name"],
-                version=self.manifest["version"],
-                sha256=self.digest["sha256"],
-                author=self.manifest["author"],
-                permissions= "\n".join('\t- {}'.format(p) for p in self.manifest["permissions"]),
-                content_scripts=json.dumps(self.manifest["content_scripts"], indent=2),
-                background=json.dumps(self.manifest["background"], indent=2),
-                entities=json.dumps(self.features["entities"], indent=2),
+---------
+{entities}
+
+Assesments:
+-----------
+    {assesments}
+""".format(
+                name=getattr(self, "manifest", {}).get("name", "N/A"),
+                version=getattr(self, "manifest", {}).get("version", "N/A"),
+                sha256=getattr(self, "digest", {}).get("sha256", "N/A"),
+                author=getattr(self, "manifest", {}).get("author", "N/A"),
+                permissions="\n".join('\t- {}'.format(p) for p in getattr(self, "manifest", {}).get("permissions", [])) if getattr(self, "manifest", {}).get("permissions", []) else "N/A",
+                content_scripts=json.dumps(getattr(self, "manifest", {}).get("content_scripts", []), indent=2),
+                background=json.dumps(getattr(self, "manifest", {}).get("background", []), indent=2),
+                entities=json.dumps(getattr(self, "features", {}).get("entities", {}), indent=2),
+                assesments="\n".join('\t- {}: {}'.format(platform, self.features["thirdparties"][platform]["assesment"]) for platform in getattr(self, "features").get("thirdparties", [])) if getattr(self, "features", {}).get("thirdparties", []) else "N/A",
             )
         )

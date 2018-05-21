@@ -36,7 +36,7 @@ from neto.lib.extensions import Extension
 from neto.downloaders.http import HTTPResource
 
 
-def analyseExtensionFromFile(filePath, quiet=False, outputPath="./", tmpPath=tempfile.gettempdir()):
+def analyseExtensionFromFile(filePath, quiet=False, analysisPath=utils.getConfigPath()["appPathDataAnalysis"], tmpPath=tempfile.gettempdir()):
     """
     Main function for Neto Analyser.
 
@@ -46,29 +46,32 @@ def analyseExtensionFromFile(filePath, quiet=False, outputPath="./", tmpPath=tem
     -------
         filePath: The local path to an extension.
         quiet: A boolean that defines whether to print an output.
-        outputPath: The folder where the extension will be stored.
+        analysisPath: The folder where the extension will be stored.
         tmpPath: The folder where unzipped files will be created.
 
     Returns:
     --------
         An Extension object.
+
+    Raises:
     """
     # Process the filePath
     if os.path.isfile(filePath):
         ext = Extension(filePath, tFolder=tmpPath)
 
-        if not quiet:
-            print("[*]\tData collected:\n" + str(ext))
+        print("[*]\tData collected:\n" + str(ext))
 
         # Store the features extracted
-        outputFile = os.path.join(outputPath, ext.digest["md5"] + ".json")
-        print("[*]\tStoring data as " + outputFile)
+        outputFile = os.path.join(analysisPath, ext.digest["md5"] + ".json")
+        if not quiet:
+            print("[*]\tAdditional information about the extension can be found as a JSON at {}…".format(outputFile))
         with open(outputFile, "w") as oF:
             oF.write(json.dumps(ext.__dict__, indent=2))
         return ext
+    else:
+        raise FileNotFoundError("The filepath provided ({}) does not match with a file.".format(filePath))
 
-
-def analyseExtensionFromURI(uri, quiet=False, outputPath="./", tmpPath=tempfile.gettempdir()):
+def analyseExtensionFromURI(uri, quiet=False, analysisPath=utils.getConfigPath()["appPathDataAnalysis"], downloadPath=utils.getConfigPath()["appPathDataFiles"], tmpPath=tempfile.gettempdir()):
     """
     Main function for Neto Analyser.
 
@@ -78,7 +81,8 @@ def analyseExtensionFromURI(uri, quiet=False, outputPath="./", tmpPath=tempfile.
     -------
         uri: The parameter options received from the command line.
         quiet: A boolean that defines whether to print an output.
-        outputPath: The folder where the extension will be stored.
+        analysisPath: The folder where the anbalysis will be stored.
+        downloadPath: The folder where the downloaded extension will be stored.
         tmpPath: The folder where unzipped files will be created.
 
     Returns:
@@ -93,10 +97,13 @@ def analyseExtensionFromURI(uri, quiet=False, outputPath="./", tmpPath=tempfile.
                 # The name of the extension is formed by:
                 #   <source>_<hashed_uri>_<extension_name>
                 # Not that the hash is not the hash of the whole extension
-                fileName = "Manual_" + md5.calculateHash(u.uri)
-                filePath = os.path.join(tmpPath, fileName)
-                print("[*]\tFile is being stored as:\t" + filePath)
-
+                if uri.split("/")[-1] != "":
+                    fileName = uri.split("/")[-1]
+                else:
+                    fileName = "Manual_" + md5.calculateHash(u.uri)
+                filePath = os.path.join(downloadPath, fileName)
+                if not quiet:
+                    print("[*]\tRemote file is being stored as {}…".format(filePath))
                 with open(filePath, "wb") as oF:
                     oF.write(data)
         except ConnectionError as e:
@@ -109,7 +116,7 @@ def analyseExtensionFromURI(uri, quiet=False, outputPath="./", tmpPath=tempfile.
     return analyseExtensionFromFile(
         filePath,
         tmpPath=tmpPath,
-        outputPath=outputPath,
+        analysisPath=outputPath,
         quiet=quiet
     )
 
@@ -131,13 +138,14 @@ def main(parsed_args):
         An exit value. If 0, successful termination. Whatever else, an error.
     """
     # Create folders
-    tmpPath = parsed_args.temporal
-    if not os.path.isdir(tmpPath):
-        os.makedirs(tmpPath)
+    if not os.path.isdir(parsed_args.analysis_path):
+        os.makedirs(parsed_args.analysis_path)
 
-    outputPath = parsed_args.output
-    if not os.path.isdir(outputPath):
-        os.makedirs(outputPath)
+    if not os.path.isdir(parsed_args.download_path):
+        os.makedirs(parsed_args.download_path)
+
+    if not os.path.isdir(parsed_args.temporal_path):
+        os.makedirs(parsed_args.temporal_path)
 
     # Perform the process depending on the options provided
     if parsed_args.downloads and os.path.isdir(parsed_args.downloads):
@@ -154,8 +162,8 @@ def main(parsed_args):
                     try:
                         ext = analyseExtensionFromFile(
                             filePath,
-                            tmpPath=tmpPath,
-                            outputPath=outputPath,
+                            tmpPath=parsed_args.temporal_path,
+                            analysisPath=parsed_args.analysis_path,
                             quiet=parsed_args.quiet,
                         )
                     except Exception as e:
@@ -168,20 +176,21 @@ def main(parsed_args):
             print("[*] " + str(i+1+parsed_args.start) + "/"+ str(len(parsed_args.uris)) +  "\t(" + str(dt.datetime.now()) + ") Processing: " + uri)
             ext = analyseExtensionFromURI(
                 uri,
-                tmpPath=tmpPath,
-                outputPath=outputPath,
+                tmpPath=parsed_args.temporal_path,
+                analysisPath=parsed_args.analysis_path,
+                downloadPath=parsed_args.download_path,
                 quiet=parsed_args.quiet
             )
-
     elif parsed_args.extensions:
         for i, filePath in enumerate(parsed_args.extensions):
             print("[*] " + str(i+1+parsed_args.start) + "/"+ str(len(parsed_args.extensions)) +  "\t(" + str(dt.datetime.now()) + ") Processing: " + filePath)
             ext = analyseExtensionFromFile(
                 filePath,
-                tmpPath=tmpPath,
-                outputPath=outputPath,
+                tmpPath=parsed_args.temporal_path,
+                analysisPath=parsed_args.analysis_path,
                 quiet=parsed_args.quiet
             )
 
     if parsed_args.clean:
-        shutil.rmtree(tmpPath)
+        print("[*] Cleaning temporal files from '{}'…".format(parsed_args.temporal_path))
+        shutil.rmtree(parsed_args.temporal_path)

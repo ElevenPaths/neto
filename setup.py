@@ -19,15 +19,19 @@
 #
 ################################################################################
 
-import neto
 from distutils.core import setup
+import os
+import sys
+
+import neto
+import neto.lib.utils as utils
 
 setup(
     name='Neto',
     version=neto.__version__,
     author='ElevenPaths',
     description='A package to perform extension analysis',
-    url='https://github.com/febrezo/neto',
+    url='https://github.com/elevenpaths/neto',
     license='GNU GPLv3+',
     packages=[
         'neto',
@@ -48,6 +52,51 @@ setup(
         "timeout_decorator",
         "requests",
         "json-rpc",
-        "werkzeug"
+        "werkzeug",
+        "configparser"
     ]
 )
+
+
+############################
+### Creating other files ###
+############################
+
+HERE = os.path.abspath(os.path.dirname(__file__))
+
+
+paths = utils.getConfigPath()
+
+
+print("[*] Copying relevant files…")
+files_to_copy= {
+    paths["appPath"] : [
+        os.path.join("config", "general.cfg"),
+    ],
+    paths["appPathDefaults"] : [
+        os.path.join("config", "general.cfg"),
+    ],
+    paths["appPathPlugins"] : [
+        os.path.join("config", "template.py.sample"),
+    ],
+}
+
+# Iterating through all destinations to write the info
+for destiny in files_to_copy.keys():
+    # Grabbing each source file to be moved
+    for sourceFile in files_to_copy[destiny]:
+        fileToMove = os.path.join(HERE,sourceFile)
+
+        cmd = ""
+        # Choosing the command depending on the SO
+        if sys.platform == 'win32':
+            if os.path.isdir(fileToMove):
+                cmd = "echo d | xcopy \"" + fileToMove + "\" \"" + destiny + "\" /s /e"
+            else:
+                cmd = "copy \"" + fileToMove + "\" \"" + destiny + "\""
+        elif sys.platform == 'linux2' or sys.platform == 'linux' or sys.platform == 'darwin':
+            if not os.geteuid() == 0:
+                cmd = "cp -r -- \"" + fileToMove + "\" \"" + destiny + "\""
+            else:
+                cmd = "sudo cp -r -- \"" + fileToMove + "\" \"" + destiny + "\""
+        output = os.popen(cmd).read()

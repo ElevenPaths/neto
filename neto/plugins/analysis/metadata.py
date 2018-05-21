@@ -25,23 +25,26 @@ import timeout_decorator
 
 
 #@timeout_decorator.timeout(30, timeout_exception=StopIteration)
-def runAnalysis(workingFiles=None):
+def runAnalysis(**kwargs):
     """
     Method that runs an analysis
 
     This method is dinamically loaded by neto.lib.extensions.Extension objects
-    to conduct an analysis. It SHOULD return a dictionary with the results of
-    the analysis that will be updated to the features property of the Extension.
+    to conduct an analysis. The analyst can choose to perform the analysis on
+    kwargs["extensionFile"] or on kwargs["unzippedFiles"]. It SHOULD return a
+    dictionary with the results of the analysis that will be updated to the
+    features property of the Extension.
 
     Args:
     -----
-        workingFiles: A dictionary where the key is the relative path to the
-            file and the the value the absolute path to the extension.
-            {
-                 "manifest.json": "/tmp/extension/manifest.json"
-                 …
-            }
-
+        kwargs: It currently contain:
+            - extensionFile: A string to the local path of the extension.
+            - unzippedFiles: A dictionary where the key is the relative path to
+                the file and the the value the absolute path to the extension.
+                {
+                    "manifest.json": "/tmp/extension/manifest.json"
+                    …
+                }
     Returns:
     --------
         A dictionary where the key is the name given to the analysis and the
@@ -51,7 +54,7 @@ def runAnalysis(workingFiles=None):
     results = {}
 
     # Iterate through all the files in the folder
-    for f, realPath in workingFiles.items():
+    for f, realPath in kwargs["unzippedFiles"].items():
         if os.path.isfile(realPath):
             fileType = f.split(".")[-1].lower()
 

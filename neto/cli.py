@@ -2,7 +2,7 @@
 #
 ################################################################################
 #
-#   Copyright 2017 ElevenPaths
+#   Copyright 2017-2018 ElevenPaths
 #
 #   Neto is free software: you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -27,6 +27,7 @@ import textwrap
 
 import neto
 import neto.analyser
+import neto.console
 import neto.daemon
 import neto.lib.extra as extra
 import neto.lib.utils as utils
@@ -54,7 +55,8 @@ Neto | A tool to analyse browser extensions
 
 This package is intended to help security analysts when analysing different
 types of browser extensions. Apart from this CLI, the utils in this package can
-be used directly from other Python packages or by means of its WebUI.
+be used directly from other Python packages or by means of its JSON RPC
+interface.
 
 ''')
     parser.epilog = textwrap.dedent('''\
@@ -71,12 +73,13 @@ be used directly from other Python packages or by means of its WebUI.
 
     subparsers = parser.add_subparsers(
         title="Subcommands",
-        description=textwrap.dedent('''  The actions that can be launched are listed as subcommands in this CLI:
+        description=textwrap.dedent('''  Available subcommands are invoked by typing 'neto <SUBCOMMAND>' where '<SUBCOMMAND>' is one of the actions listed below:
 
     analyser          Performs the analysis of one or several extensions.
+    console           Starts an interactive application to conduct the analysis.
     daemon            Starts the JSON RPC daemon.
 
-          ''') + textwrap.fill("Available subcommands are invoked by typing 'neto <SUBCOMMAND>' where '<SUBCOMMAND>' is one of the words listed below. Appending '--help' to the full command will print the help for each one of them."),
+          ''') + textwrap.fill("Appending '--help' to the full command will print the help for each one of them."),
         dest="subcommand"
     )
 
@@ -117,37 +120,31 @@ be used directly from other Python packages or by means of its WebUI.
     )
     # Adding optional parameters
     analyserGroupOther.add_argument(
-        '-t', '--temporal',
+        '--analysis_path',
         metavar='<PATH>',
-        default=os.path.join(tempfile.gettempdir(), "neto", "analyser"),
+        default=utils.getConfigPath()["appPathDataAnalysis"],
         action='store',
-        help='the path where the extensions will be extracted.'
+        help='sets a different path to store the analysis as a Json. Default: {}'.format(utils.getConfigPath()["appPathDataAnalysis"])
     )
     analyserGroupOther.add_argument(
-        '-o', '--output',
+        '--download_path',
         metavar='<PATH>',
-        default="output",
+        default=utils.getConfigPath()["appPathDataFiles"],
         action='store',
-        help='the path where the results will be stored.'
+        help='sets a different path to store the downloaded extensions. Default: {}'.format(utils.getConfigPath()["appPathDataFiles"])
     )
-    # TODO: Add a flag that would let the analyst to hardcode extra parameters
     analyserGroupOther.add_argument(
-        '-j' , '--json',
+        '--temporal_path',
+        metavar='<PATH>',
+        default=os.path.join(tempfile.gettempdir(), "neto", "temporal"),
         action='store',
-        default="{}",
-        help='a Json that would be added to each analysis in this iteration.'
+        help='sets the path where the extensions will be extracted. It is recommended to use a temporal path. Default: {}'.format(os.path.join(tempfile.gettempdir(), "neto", "temporal"))
     )
     analyserGroupOther.add_argument(
         '--clean',
         action='store_true',
         default=False,
-        help='removes all temporary files.'
-    )
-    analyserGroupOther.add_argument(
-        '--contains_name',
-        action='store',
-        default=None,
-        help='sets a string that SHOULD appear in the name of the file.'
+        help='removes all temporary generated files created in the unzipping process so as to free space.'
     )
     analyserGroupOther.add_argument(
         '--quiet',
@@ -160,9 +157,39 @@ be used directly from other Python packages or by means of its WebUI.
         action='store',
         default=0,
         type=int,
-        help='sets the start index for the analysis.'
+        help='sets the start index in case you analyse several files in a folder. This option can be used to relaunch experiments with a big series of files..'
     )
     analyserParser.set_defaults(func=neto.analyser.main)
+
+    # Console parser
+    # -------------
+    consoleParser = subparsers.add_parser('console')
+
+    # Other options
+    consoleGroupOther = consoleParser.add_argument_group(
+        'Other arguments',
+        textwrap.fill('Advanced configuration of the behaviour of the console UI, including temporal folders and output folders.')
+    )
+    consoleGroupOther.add_argument(
+        '--downloads',
+        metavar='<PATH>',
+        action='store',
+        default=utils.getConfigPath()["appPathDataFiles"],
+        help='the path where the extensions will be downloaded.'
+    )
+    consoleGroupOther.add_argument(
+        '--analysis',
+        action='store',
+        default=utils.getConfigPath()["appPathDataAnalysis"],
+        help='sets the analysis folder where the JSON files will be stored.'
+    )
+    consoleGroupOther.add_argument(
+        '--working_directory',
+        action='store',
+        default=utils.getConfigurationFor("console")["working_directory"] or utils.getConfigPath()["appPathDataAnalysis"],
+        help='sets the path where previous analysis are supposed to be. The loaded analysis will be brought from here.'
+    )
+    consoleParser.set_defaults(func=neto.console.main)
 
     # Daemon parser
     # -------------
@@ -178,14 +205,14 @@ be used directly from other Python packages or by means of its WebUI.
         "--port",
         type=int,
         help="Port to listen on",
-        default=14041,
+        default=int(utils.getConfigurationFor("daemon")["port"]) or 14041,
         required=False
     )
     daemonGroupOptions.add_argument(
         "--host",
         type=str,
         help="Host to be listen on",
-        default='localhost',
+        default=utils.getConfigurationFor("daemon")["host"] or 'localhost',
     )
     daemonGroupOptions.add_argument(
         '--debug',
@@ -203,13 +230,13 @@ be used directly from other Python packages or by means of its WebUI.
         '--downloads',
         metavar='<PATH>',
         action='store',
-        default=os.path.join(tempfile.gettempdir(), "neto", "downloads"),
+        default=utils.getConfigPath()["appPathDataFiles"],
         help='the path where the extensions will be downloaded.'
     )
     daemonGroupOptions.add_argument(
         '--analysis',
         action='store',
-        default=os.path.join(tempfile.gettempdir(), "neto", "analysis"),
+        default=utils.getConfigPath()["appPathDataAnalysis"],
         help='sets the analysis folder where the JSON files will be stored.'
     )
     daemonParser.set_defaults(func=neto.daemon.main)
