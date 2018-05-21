@@ -3,6 +3,21 @@ Project Neto's Changelog
 
 Full details of the changes committed with each version.
 
+0.6.0, 2018/05/21 -- Add t
+
+- Add `neto console` as an interactive way of dealing 
+with Neto.
+- Add some text to the terminal to show some of the data
+extracted from the extension. All the data is still 
+reachable in the generated JSON file, but the most 
+important features are now printed in the terminal.
+- Refactor of the extension plugins: they now can be
+written to analyse either unzipped extensions or the zipped
+files.
+- Add Virustotal assesment
+- Add a locally stored configuration folder for different OS
+- Add to .gitignore output folder
+
 0.5.1, 2018/05/08 -- Add werkzeug dependency
 
 Hotfix to add a dependency for many Python3 users by adding
