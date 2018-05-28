@@ -543,7 +543,7 @@ class Extension:
         """
         results = {}
 
-        analysisList = utils.getRunnableAnalysisFromModule("neto.plugins.analysis")
+        analysisList = utils.getRunnableAnalysisFromModule("neto.plugins.analysis") + utils.getUserAnalysisMethods()
         for methodObj in analysisList:
             results.update(methodObj(unzippedFiles=unzippedFiles, extensionFile=extensionFile))
 

@@ -21,10 +21,8 @@
 
 
 import os
-import timeout_decorator
 
-#@timeout_decorator.timeout(30, timeout_exception=StopIteration)
-def runAnalysisFromFiles(**kwargs):
+def runAnalysis(**kwargs):
     """
     Method that runs an analysis
 

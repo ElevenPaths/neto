@@ -3,7 +3,14 @@ Project Neto's Changelog
 
 Full details of the changes committed with each version.
 
-0.6.0, 2018/05/21 -- Add t
+0.6.1, 2018/05/28 -- Add user-defined plugins
+
+- Add user-defined wrappers including a template.py for doing
+it.
+- Fix an error that occurred when Virustotal API was not 
+provided.
+
+0.6.0, 2018/05/21 -- Add Neto console interactive shell
 
 - Add `neto console` as an interactive way of dealing 
 with Neto.

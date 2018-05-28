@@ -134,7 +134,7 @@ def getUserAnalysisMethods():
     userMethods = []
 
     # Creating the application paths
-    paths = utils.getConfigPath()
+    paths = getConfigPath()
 
     newPath = os.path.abspath(paths["appPathPlugins"])
 
