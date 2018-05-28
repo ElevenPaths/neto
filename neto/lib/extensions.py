@@ -569,6 +569,22 @@ class Extension:
 
 
     def __str__(self):
+        assesments = ""
+        if getattr(self, "features", {}).get("thirdparties", []):
+            for platform in getattr(self, "features").get("thirdparties", []):
+                try:
+                    assesments += "\n\t- {}: {}".format(
+                        platform,
+                        self.features["thirdparties"][platform]["assesment"]
+                    )
+                except:
+                    assesments += "\n\t- {}: {}".format(
+                        platform,
+                        "N/F"
+                    )
+        else:
+            assesments = "N/A"
+
         return textwrap.dedent("""
 Name:               {name}
 -----
@@ -610,6 +626,6 @@ Assesments:
                 content_scripts=json.dumps(getattr(self, "manifest", {}).get("content_scripts", []), indent=2),
                 background=json.dumps(getattr(self, "manifest", {}).get("background", []), indent=2),
                 entities=json.dumps(getattr(self, "features", {}).get("entities", {}), indent=2),
-                assesments="\n".join('\t- {}: {}'.format(platform, self.features["thirdparties"][platform]["assesment"]) for platform in getattr(self, "features").get("thirdparties", [])) if getattr(self, "features", {}).get("thirdparties", []) else "N/A",
+                assesments=assesments,
             )
         )
