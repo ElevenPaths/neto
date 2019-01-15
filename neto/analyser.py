@@ -27,6 +27,7 @@ import tempfile
 import traceback
 import shutil
 import sys
+import zipfile
 
 import neto
 import neto.lib.crypto.md5 as md5
@@ -52,8 +53,6 @@ def analyseExtensionFromFile(filePath, quiet=False, analysisPath=utils.getConfig
     Returns:
     --------
         An Extension object.
-
-    Raises:
     """
     # Process the filePath
     if os.path.isfile(filePath):
@@ -116,7 +115,7 @@ def analyseExtensionFromURI(uri, quiet=False, analysisPath=utils.getConfigPath()
     return analyseExtensionFromFile(
         filePath,
         tmpPath=tmpPath,
-        analysisPath=outputPath,
+        analysisPath=analysisPath,
         quiet=quiet
     )
 
@@ -168,29 +167,37 @@ def main(parsed_args):
                         )
                     except Exception as e:
                         print("[X]\tSomething happened when processing {s}...".format(s=filePath))
-                        print(e)
-                        traceback.print_exc()
-                        print("[*]\tGoing on with the execution")
+                        print("[X]\tError Message: '{e}'".format(e=e))
+                        #traceback.print_exc()
     elif parsed_args.uris:
         for i, uri in enumerate(parsed_args.uris):
             print("[*] " + str(i+1+parsed_args.start) + "/"+ str(len(parsed_args.uris)) +  "\t(" + str(dt.datetime.now()) + ") Processing: " + uri)
-            ext = analyseExtensionFromURI(
-                uri,
-                tmpPath=parsed_args.temporal_path,
-                analysisPath=parsed_args.analysis_path,
-                downloadPath=parsed_args.download_path,
-                quiet=parsed_args.quiet
-            )
+            try:
+                ext = analyseExtensionFromURI(
+                    uri,
+                    tmpPath=parsed_args.temporal_path,
+                    analysisPath=parsed_args.analysis_path,
+                    downloadPath=parsed_args.download_path,
+                    quiet=parsed_args.quiet
+                )
+            except Exception as e:
+                print("[X]\tSomething happened when processing {s}...".format(s=uri))
+                print("[X]\tError Message: '{e}'".format(e=e))
+                #traceback.print_exc()
     elif parsed_args.extensions:
         for i, filePath in enumerate(parsed_args.extensions):
             print("[*] " + str(i+1+parsed_args.start) + "/"+ str(len(parsed_args.extensions)) +  "\t(" + str(dt.datetime.now()) + ") Processing: " + filePath)
-            ext = analyseExtensionFromFile(
-                filePath,
-                tmpPath=parsed_args.temporal_path,
-                analysisPath=parsed_args.analysis_path,
-                quiet=parsed_args.quiet
-            )
-
+            try:
+                ext = analyseExtensionFromFile(
+                    filePath,
+                    tmpPath=parsed_args.temporal_path,
+                    analysisPath=parsed_args.analysis_path,
+                    quiet=parsed_args.quiet
+                )
+            except Exception as e:
+                print("[X]\tSomething happened when processing {s}...".format(s=filePath))
+                print("[X]\tError Message: '{e}'".format(e=e))
+                #traceback.print_exc()
     if parsed_args.clean:
         print("[*] Cleaning temporal files from '{}'…".format(parsed_args.temporal_path))
         shutil.rmtree(parsed_args.temporal_path)

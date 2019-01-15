@@ -67,6 +67,8 @@ class Extension:
         -------
             ValueError: if neither a lPath or a JSON has been provided ow when
                 the JSON string could not be read.
+            zipfile.BadZipFile: if the function is unable of unzipping the
+                extension.
         """
         if lPath:
             self.analyser_version = neto.__version__
