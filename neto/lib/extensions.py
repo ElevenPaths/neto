@@ -616,9 +616,14 @@ Entities:
 ---------
 {entities}
 
+Suspicious strings:
+-------------------
+{suspicious}
+
 Assesments:
 -----------
-    {assesments}
+{assesments}
+
 """.format(
                 name=getattr(self, "manifest", {}).get("name", "N/A"),
                 version=getattr(self, "manifest", {}).get("version", "N/A"),
@@ -629,5 +634,6 @@ Assesments:
                 background=json.dumps(getattr(self, "manifest", {}).get("background", []), indent=2),
                 entities=json.dumps(getattr(self, "features", {}).get("entities", {}), indent=2),
                 assesments=assesments,
+                suspicious=json.dumps(getattr(self, "features", {}).get("suspicious", {}), indent=2)
             )
         )

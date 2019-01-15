@@ -199,5 +199,7 @@ def main(parsed_args):
                 print("[X]\tError Message: '{e}'".format(e=e))
                 #traceback.print_exc()
     if parsed_args.clean:
-        print("[*] Cleaning temporal files from '{}'…".format(parsed_args.temporal_path))
+        print("[*]\tCleaning temporal files from '{}'…".format(parsed_args.temporal_path))
         shutil.rmtree(parsed_args.temporal_path)
+    else:
+        print("[*]\tTemporal files remain at '{}'…".format(parsed_args.temporal_path))
