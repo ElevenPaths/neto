@@ -27,7 +27,31 @@ import timeout_decorator
 
 REGEXPS = {
     "possible_obfuscation":  [
-        b"eval\("
+        b"eval\(",
+        b"encode",
+        b"base64",
+        b"base58",
+        b"atob"
+    ],
+    "possible_payments":  [
+        b"visa",
+        b"VISA",
+        b"[Mm]aster[Cc]ard",
+        b"MASTERCARD",
+        b"[Aa]merican_?[Ee]xpress",
+        b"AMERICAN_?EXPRESS",
+        b"[Pp]aypal"
+    ],
+    "pattern_recognition":  [
+        b"pattern",
+        b"regex",
+        b"regularexpression"
+    ],
+    "external_connections": [
+        b"XMLHttpRequest",
+        b"GET",
+        b"POST",
+        b"PUT"
     ]
 }
 
