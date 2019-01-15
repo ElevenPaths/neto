@@ -3,6 +3,13 @@ Project Neto's Changelog
 
 Full details of the changes committed with each version.
 
+0.6.2, 2019/01/15 -- Several issues have  been addressed
+
+- Add more suspicious categories to detect pattern recognition code, external connections and possible payments.
+- Add suspicious strings to standard output
+- Beautify outputs when the program is unable to process an extension because of incorrect extensions
+- Fix an error in the storage of the data extracted from entities
+
 0.6.1, 2018/05/28 -- Add user-defined plugins
 
 - Add user-defined wrappers including a template.py for doing
