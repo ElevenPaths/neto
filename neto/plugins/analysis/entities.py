@@ -30,7 +30,11 @@ REGEXPS = {
     "ipv4": b"[^a-zA-Z0-9]([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})[^a-zA-Z0-9]",
     "bitcoin_address": b"[^a-zA-Z0-9]([13][a-km-zA-HJ-NP-Z1-9]{26,33})[^a-zA-Z0-9]",
     "litecoin_address": b"[^a-zA-Z0-9](L[a-km-zA-HJ-NP-Z1-9]{32})[^a-zA-Z0-9]",
-    "data_blob": b"href=[\"'](data:.+?)[\"']"
+    "data_blob": b"href=[\"'](data:.+?)[\"']",
+    "cc_visa": b"^(?:4[0-9]{12}(?:[0-9]{3})?)$",
+    "cc_mastercard": b"^(?:3[47][0-9]{13})$",
+    "cc_american_express": b"^(?:3[47][0-9]{13})$",
+    "cc_dinners_club": b"^(?:6(?:011|5[0-9][0-9])[0-9]{12})$",
 }
 
 #@timeout_decorator.timeout(30, timeout_exception=StopIteration)
