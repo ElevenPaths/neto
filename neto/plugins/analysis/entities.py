@@ -34,7 +34,7 @@ REGEXPS = {
     "cc_visa": b"^(?:4[0-9]{12}(?:[0-9]{3})?)$",
     "cc_mastercard": b"^(?:3[47][0-9]{13})$",
     "cc_american_express": b"^(?:3[47][0-9]{13})$",
-    "cc_dinners_club": b"^(?:6(?:011|5[0-9][0-9])[0-9]{12})$",
+    "cc_dinners_club": b"^(?:6(?:011|5[0-9][0-9])[0-9]{12})$"
 }
 
 #@timeout_decorator.timeout(30, timeout_exception=StopIteration)
@@ -66,19 +66,18 @@ def runAnalysis(**kwargs):
     """
     results = {}
 
-    # Iterate through all the files in the folder
-    for f, realPath in kwargs["unzippedFiles"].items():
-        if os.path.isfile(realPath):
-            fileType = f.split(".")[-1].lower()
-
-            # Extract entities from html files
-            if fileType in ["js", "html", "htm", "css", "txt"]:
-                # Read the data
-                raw_data = open(realPath, "rb").read()
-
-                # Iterate through all the regexps
-                for e in REGEXPS.keys():
-                    results[e] = []
+    # Iterate through all the regexps
+    for e in REGEXPS.keys():
+        results[e] = []
+        # Iterate through all the files in the folder
+        for f, realPath in kwargs["unzippedFiles"].items():
+            if os.path.isfile(realPath):
+                fileType = f.split(".")[-1].lower()
+                
+                # Extract entities from html files
+                if fileType in ["js", "html", "htm", "css", "txt"]:
+                    # Read the data
+                    raw_data = open(realPath, "rb").read()
                     values = re.findall(REGEXPS[e], raw_data)
 
                     for v in values:

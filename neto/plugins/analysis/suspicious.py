@@ -61,19 +61,19 @@ def runAnalysis(**kwargs):
     """
     results = {}
 
-    # Iterate through all the files in the folder
-    for f, realPath in kwargs["unzippedFiles"].items():
-        if os.path.isfile(realPath):
-            fileType = f.split(".")[-1].lower()
 
-            # Extract matching strings from text files
-            if fileType in ["js", "html", "htm", "css", "txt"]:
-                # Read the data
-                raw_data = open(realPath, "rb").read()
-
-                # Iterate through all the regexps
-                for e, valuesRe in REGEXPS.items():
-                    results[e] = []
+    # Iterate through all the regexps
+    for e, valuesRe in REGEXPS.items():
+        results[e] = []
+        # Iterate through all the files in the folder
+        for f, realPath in kwargs["unzippedFiles"].items():
+            if os.path.isfile(realPath):
+                fileType = f.split(".")[-1].lower()
+                
+                # Extract matching strings from text files
+                if fileType in ["js", "html", "htm", "css", "txt"]:
+                    # Read the data
+                    raw_data = open(realPath, "rb").read()
                     for exp in valuesRe:
                         values = re.findall(exp, raw_data)
                         for v in values:
