@@ -33,13 +33,13 @@ Quick Start
 
 To perform the analysis of an extension, the analyst can type the following:
 ```
-neto analysis -u https://yoururl.com/extension-name.xpi
+neto analyser -u https://yoururl.com/extension-name.xpi
 ```
 The extension will be automatically downloaded and unzipped by default in the system's temporal folder.
 
 However, the analyst can also launch de analysis towards a locally stored extension:
 ```
-neto analysis -e ./my-extension-name.xpi
+neto analyser -e ./my-extension-name.xpi
 ```
 
 After the static analysis is performed, it will generate a Json file that is stored by default in a newly created folder named `output`.
